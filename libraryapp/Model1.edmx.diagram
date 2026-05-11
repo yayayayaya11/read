@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="1a9596021aef4591bb8ac1f387183518" Name="Diagram1">
+        <EntityTypeShape EntityType="LibraryDBModel.AppUsers" Width="1.5" PointX="3" PointY="9.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.AuthorRoleRequests" Width="1.5" PointX="5.25" PointY="8.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.Books" Width="1.5" PointX="5.25" PointY="11.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.Complaints" Width="1.5" PointX="7.5" PointY="10.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.FreezeDisputes" Width="1.5" PointX="10.5" PointY="10.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.Genres" Width="1.5" PointX="7.5" PointY="20.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.Reviews" Width="1.5" PointX="7.5" PointY="15.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.Roles" Width="1.5" PointX="0.75" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="LibraryDBModel.UserBookShelves" Width="1.5" PointX="7.5" PointY="7.25" IsExpanded="true" />
+        <AssociationConnector Association="LibraryDBModel.FK__AppUsers__RoleId__3E52440B" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__AuthorRol__UserI__5BE2A6F2" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Books__AuthorUse__4222D4EF" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Complaint__Autho__5535A963" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Complaint__Compl__571DF1D5" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__FreezeDis__Reque__6383C8BA" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__FreezeDis__Targe__628FA481" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Reviews__UserId__4AB81AF0" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__UserBookS__UserI__4F7CD00D" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Complaint__BookI__5441852A" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__FreezeDis__Targe__60A75C0F" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Reviews__BookId__49C3F6B7" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__UserBookS__BookI__5070F446" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__Complaint__Revie__5629CD9C" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.FK__FreezeDis__Targe__619B8048" ManuallyRouted="false" />
+        <AssociationConnector Association="LibraryDBModel.BookGenres" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

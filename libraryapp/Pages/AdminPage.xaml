@@ -1,0 +1,12 @@
+<Page x:Class="libraryapp.Pages.AdminPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Администрирование" Loaded="Page_Loaded" Background="#F8FAFC">
+    <TabControl x:Name="Tabs" Margin="8">
+        <TabItem Header="Жалобы" x:Name="TabComplaints"/>
+        <TabItem Header="Оспаривания заморозки" x:Name="TabDisputes"/>
+        <TabItem Header="Заявки на роль автора" x:Name="TabAuthorReq"/>
+        <TabItem Header="Замороженные" x:Name="TabFrozen"/>
+        <TabItem Header="Пользователи" x:Name="TabUsers"/>
+    </TabControl>
+</Page>
