@@ -37,8 +37,12 @@ namespace libraryapp
             return w.ShowDialog() == true ? result : null;
         }
 
+        /// <summary>
+        /// Отображает диалоговое окно для ввода пароля.
+        /// </summary>
         public static string AskPassword(string title)
         {
+            // WindowStartupLocation.CenterScreen обеспечивает центрирование относительно экрана
             var w = new Window
             {
                 Title = title,
@@ -47,6 +51,7 @@ namespace libraryapp
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };
             var sp = new StackPanel { Margin = new Thickness(12) };
+            // Поле для ввода пароля (скрывает вводимые символы)
             var pb = new PasswordBox { Margin = new Thickness(0, 0, 0, 12) };
             var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
             string result = null;
