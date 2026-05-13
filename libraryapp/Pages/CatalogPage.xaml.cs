@@ -52,6 +52,7 @@ namespace libraryapp.Pages
                 .Include(b => b.AppUsers)
                 .Include(b => b.Genres)
                 .Include(b => b.Reviews)
+                .Where(b => !b.IsFrozen)
                 .ToList();
 
             IEnumerable<Books> q = books;
@@ -147,45 +148,47 @@ namespace libraryapp.Pages
                 FontSize = 12
             });
 
-            if (b.IsFrozen)
-            {
-                sp.Children.Add(new TextBlock
-                {
-                    Text = "Заморожена",
-                    Foreground = Brushes.DarkRed,
-                    FontSize = 11,
-                    Margin = new Thickness(0, 4, 0, 0)
-                });
-            }
-
             var shelfPanel = new StackPanel { Margin = new Thickness(0, 8, 0, 0) };
-            var cb = new ComboBox { Height = 24, FontSize = 11 };
-            cb.Items.Add(new ComboBoxItem { Content = "В список: Заброшено", Tag = ShelfTypes.Abandoned });
+            var uid = AppSession.CurrentUser.UserId;
+            var bookId = b.BookId;
+            var existingShelf = Core.Context.UserBookShelves.FirstOrDefault(x => x.UserId == uid && x.BookId == bookId);
+
+            var cb = new ComboBox
+            {
+                Height = 28,
+                FontSize = 11,
+                ToolTip = "Откройте список и выберите полку — книга будет добавлена или перенесена."
+            };
+            cb.Items.Add(new ComboBoxItem { Content = "На полку: выберите…", Tag = null });
+            cb.Items.Add(new ComboBoxItem { Content = "Заброшено", Tag = ShelfTypes.Abandoned });
             cb.Items.Add(new ComboBoxItem { Content = "В планах", Tag = ShelfTypes.Planned });
             cb.Items.Add(new ComboBoxItem { Content = "Читаю", Tag = ShelfTypes.Reading });
             cb.Items.Add(new ComboBoxItem { Content = "Прочитано", Tag = ShelfTypes.Read });
-            cb.SelectedIndex = 1;
-            var addBtn = new Button { Content = "+", Width = 50, Margin = new Thickness(4, 0, 0, 0), Tag = b.BookId };
-            addBtn.Click += (s, ev) =>
+            cb.SelectedIndex = existingShelf != null
+                ? 1 + Math.Min(3, Math.Max(0, (int)existingShelf.ShelfType))
+                : 0;
+
+            cb.SelectionChanged += (_, __) =>
             {
-                var uid = AppSession.CurrentUser.UserId;
-                var shelf = (byte)((cb.SelectedItem as ComboBoxItem)?.Tag ?? ShelfTypes.Planned);
-                var existing = Core.Context.UserBookShelves.FirstOrDefault(x => x.UserId == uid && x.BookId == b.BookId);
-                if (existing == null)
+                var ci = cb.SelectedItem as ComboBoxItem;
+                if (ci == null || !(ci.Tag is byte shelf))
+                    return;
+                var row = Core.Context.UserBookShelves.FirstOrDefault(x => x.UserId == uid && x.BookId == bookId);
+                if (row == null)
                 {
-                    var shelfEntry = new UserBookShelves { UserId = uid, BookId = b.BookId, ShelfType = shelf };
-                    Core.Context.UserBookShelves.Add(shelfEntry);
+                    Core.Context.UserBookShelves.Add(new UserBookShelves { UserId = uid, BookId = bookId, ShelfType = shelf });
+                    Core.Context.SaveChanges();
+                    MessageBox.Show("Книга добавлена в выбранный список.", "Каталог", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-                else
-                    existing.ShelfType = shelf;
-                Core.Context.SaveChanges();
-                MessageBox.Show("Книга добавлена в выбранный список.", "Каталог", MessageBoxButton.OK, MessageBoxImage.Information);
+                else if (row.ShelfType != shelf)
+                {
+                    row.ShelfType = shelf;
+                    Core.Context.SaveChanges();
+                    MessageBox.Show("Книга перенесена в выбранный список.", "Каталог", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             };
-            var shelfDock = new DockPanel();
-            DockPanel.SetDock(addBtn, Dock.Right);
-            shelfDock.Children.Add(addBtn);
-            shelfDock.Children.Add(cb);
-            shelfPanel.Children.Add(shelfDock);
+
+            shelfPanel.Children.Add(cb);
             sp.Children.Add(shelfPanel);
 
             root.MouseLeftButtonUp += (_, ev) =>
@@ -199,7 +202,7 @@ namespace libraryapp.Pages
             return root;
         }
 
-        /// <summary>Клики по кнопке «+», списку полки и т.п. не открывают карточку.</summary>
+        /// <summary>Клики по полке (ComboBox) не открывают карточку книги.</summary>
         private static bool IsInteractiveNavigationSource(DependencyObject src)
         {
             while (src != null)

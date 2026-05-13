@@ -34,6 +34,12 @@ namespace libraryapp.Pages
             {
                 TitleHeader.Text = "Новая книга";
                 CoverInfo.Text = "Обложка не выбрана.";
+                AppSession.ReloadCurrentUser();
+                if (AppSession.IsFrozen)
+                {
+                    MessageBox.Show("Аккаунт заморожен: создавать новые книги нельзя.");
+                    NavigationService?.GoBack();
+                }
                 return;
             }
 
@@ -88,6 +94,12 @@ namespace libraryapp.Pages
 
             if (_bookId == 0)
             {
+                AppSession.ReloadCurrentUser();
+                if (AppSession.IsFrozen)
+                {
+                    MessageBox.Show("Аккаунт заморожен: создавать новые книги нельзя.");
+                    return;
+                }
                 var book = new Books
                 {
                     Title = title,

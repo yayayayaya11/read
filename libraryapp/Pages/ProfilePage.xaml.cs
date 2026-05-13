@@ -74,17 +74,47 @@ namespace libraryapp.Pages
                 .OrderByDescending(r => r.ReviewId)
                 .ToList();
 
+            var cellTextStyle = new Style(typeof(TextBlock));
+            cellTextStyle.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+            cellTextStyle.Setters.Add(new Setter(TextBlock.TextTrimmingProperty, TextTrimming.None));
+            cellTextStyle.Setters.Add(new Setter(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center));
+
             var dg = new DataGrid
             {
                 ItemsSource = reviews,
                 AutoGenerateColumns = false,
                 IsReadOnly = true,
-                Height = 220,
-                Margin = new Thickness(0, 8, 0, 0)
+                MinHeight = 160,
+                MaxHeight = 420,
+                Margin = new Thickness(0, 8, 0, 0),
+                CanUserResizeColumns = true,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
-            dg.Columns.Add(new DataGridTextColumn { Header = "Книга", Binding = new System.Windows.Data.Binding("Books.Title"), Width = new DataGridLength(2, DataGridLengthUnitType.Star) });
-            dg.Columns.Add(new DataGridTextColumn { Header = "Оценка", Binding = new System.Windows.Data.Binding("Rating"), Width = 60 });
-            dg.Columns.Add(new DataGridTextColumn { Header = "Комментарий", Binding = new System.Windows.Data.Binding("Comment"), Width = new DataGridLength(3, DataGridLengthUnitType.Star) });
+            dg.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Книга",
+                Binding = new System.Windows.Data.Binding("Books.Title") { TargetNullValue = "—" },
+                Width = new DataGridLength(2, DataGridLengthUnitType.Star),
+                MinWidth = 160,
+                ElementStyle = cellTextStyle
+            });
+            dg.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Оценка",
+                Binding = new System.Windows.Data.Binding("Rating"),
+                Width = new DataGridLength(1, DataGridLengthUnitType.Auto),
+                MinWidth = 72,
+                ElementStyle = cellTextStyle
+            });
+            dg.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Комментарий",
+                Binding = new System.Windows.Data.Binding("Comment"),
+                Width = new DataGridLength(3, DataGridLengthUnitType.Star),
+                MinWidth = 200,
+                ElementStyle = cellTextStyle
+            });
             Root.Children.Add(dg);
 
             if (u.RoleId == RoleIds.Reader)

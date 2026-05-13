@@ -17,12 +17,29 @@ namespace libraryapp.Pages
         private void Reload()
         {
             Root.Children.Clear();
+            AppSession.ReloadCurrentUser();
             var uid = AppSession.CurrentUser.UserId;
 
             Root.Children.Add(new TextBlock { Text = "Кабинет автора", FontSize = 22, FontWeight = FontWeights.Bold });
             var add = new Button { Content = "Добавить новую книгу", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
             add.Click += (_, __) => NavigationService?.Navigate(new BookEditPage(0));
+            if (AppSession.IsFrozen)
+            {
+                add.IsEnabled = false;
+                add.ToolTip = "Аккаунт заморожен: добавление новых книг недоступно.";
+            }
             Root.Children.Add(add);
+            if (AppSession.IsFrozen)
+            {
+                Root.Children.Add(new TextBlock
+                {
+                    Text = "Ваш аккаунт заморожен администратором. Добавление новых книг недоступно до снятия заморозки.",
+                    Foreground = System.Windows.Media.Brushes.DarkRed,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 8, 0, 0),
+                    MaxWidth = 640
+                });
+            }
 
             Root.Children.Add(new TextBlock { Text = "Опубликованные книги", FontSize = 18, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 20, 0, 0) });
 
