@@ -170,7 +170,7 @@ namespace libraryapp.Pages
             cb.Items.Add(new ComboBoxItem { Content = "Читаю", Tag = ShelfTypes.Reading });
             cb.Items.Add(new ComboBoxItem { Content = "Прочитано", Tag = ShelfTypes.Read });
             cb.SelectedIndex = 1;
-            var addBtn = new Button { Content = "+", Width = 28, Margin = new Thickness(4, 0, 0, 0), Tag = b.BookId };
+            var addBtn = new Button { Content = "+", Width = 50, Margin = new Thickness(4, 0, 0, 0), Tag = b.BookId };
             addBtn.Click += (s, ev) =>
             {
                 var uid = AppSession.CurrentUser.UserId;
