@@ -113,35 +113,53 @@ namespace libraryapp.Pages
             RootPanel.Children.Add(new Separator { Margin = new Thickness(0, 16, 0, 16) });
             RootPanel.Children.Add(new TextBlock { Text = "Отзывы", FontSize = 18, FontWeight = FontWeights.SemiBold });
 
+            var alreadyReviewed = Core.Context.Reviews.Any(r => r.BookId == book.BookId && r.UserId == AppSession.CurrentUser.UserId);
             if (!AppSession.IsFrozen)
             {
-                var addPanel = new StackPanel { Margin = new Thickness(0, 8, 0, 8) };
-                addPanel.Children.Add(new TextBlock { Text = "Ваш отзыв (оценка 1–5 и комментарий)" });
-                var ratingBox = new ComboBox { Width = 80, Margin = new Thickness(0, 4, 0, 0) };
-                for (var i = 1; i <= 5; i++) ratingBox.Items.Add(i);
-                ratingBox.SelectedIndex = 4;
-                addPanel.Children.Add(ratingBox);
-                var comment = new TextBox { MinHeight = 60, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
-                addPanel.Children.Add(comment);
-                var send = new Button { Content = "Отправить отзыв", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 6, 0, 0) };
-                send.Click += (_, __) =>
+                if (alreadyReviewed)
                 {
-                    var r = ratingBox.SelectedIndex + 1;
-                    var rev = new Reviews
+                    RootPanel.Children.Add(new TextBlock
                     {
-                        BookId = book.BookId,
-                        UserId = AppSession.CurrentUser.UserId,
-                        Rating = r,
-                        Comment = comment.Text,
-                        IsFrozen = false
+                        Text = "Вы уже оставили отзыв к этой книге.",
+                        Margin = new Thickness(0, 8, 0, 8),
+                        Foreground = Brushes.DimGray
+                    });
+                }
+                else
+                {
+                    var addPanel = new StackPanel { Margin = new Thickness(0, 8, 0, 8) };
+                    addPanel.Children.Add(new TextBlock { Text = "Ваш отзыв (оценка 1–5 и комментарий)" });
+                    var ratingBox = new ComboBox { Width = 80, Margin = new Thickness(0, 4, 0, 0) };
+                    for (var i = 1; i <= 5; i++) ratingBox.Items.Add(i);
+                    ratingBox.SelectedIndex = 4;
+                    addPanel.Children.Add(ratingBox);
+                    var comment = new TextBox { MinHeight = 60, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
+                    addPanel.Children.Add(comment);
+                    var send = new Button { Content = "Отправить отзыв", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 6, 0, 0) };
+                    send.Click += (_, __) =>
+                    {
+                        if (Core.Context.Reviews.Any(r => r.BookId == book.BookId && r.UserId == AppSession.CurrentUser.UserId))
+                        {
+                            MessageBox.Show("Вы уже оставили отзыв к этой книге.");
+                            return;
+                        }
+                        var rating = ratingBox.SelectedIndex + 1;
+                        var rev = new Reviews
+                        {
+                            BookId = book.BookId,
+                            UserId = AppSession.CurrentUser.UserId,
+                            Rating = rating,
+                            Comment = comment.Text,
+                            IsFrozen = false
+                        };
+                        Core.Context.Reviews.Add(rev);
+                        Core.Context.SaveChanges();
+                        MessageBox.Show("Отзыв добавлен.");
+                        NavigationService?.Navigate(new BookDetailPage(book.BookId));
                     };
-                    Core.Context.Reviews.Add(rev);
-                    Core.Context.SaveChanges();
-                    MessageBox.Show("Отзыв добавлен.");
-                    NavigationService?.Navigate(new BookDetailPage(book.BookId));
-                };
-                addPanel.Children.Add(send);
-                RootPanel.Children.Add(addPanel);
+                    addPanel.Children.Add(send);
+                    RootPanel.Children.Add(addPanel);
+                }
             }
 
             foreach (var rev in book.Reviews.OrderByDescending(r => r.ReviewId))

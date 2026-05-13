@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
@@ -70,7 +71,7 @@ namespace libraryapp.Pages
                 .Include(b => b.AppUsers)
                 .Include(b => b.Genres)
                 .Include(b => b.Reviews)
-                .Where(b => shelfBookIds.Contains(b.BookId))
+                .Where(b => shelfBookIds.Contains(b.BookId) && !b.IsFrozen)
                 .ToList();
 
             IEnumerable<Books> q = books;
@@ -112,6 +113,8 @@ namespace libraryapp.Pages
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Background = Brushes.White,
+                Cursor = Cursors.Hand,
+                Tag = b.BookId,
                 Effect = new DropShadowEffect
                 {
                     BlurRadius = 14,
@@ -136,11 +139,7 @@ namespace libraryapp.Pages
             sp.Children.Add(new TextBlock { Text = b.AppUsers?.DisplayName ?? "", Foreground = Brushes.Gray, FontSize = 12 });
             sp.Children.Add(new TextBlock { Text = avg.HasValue ? $"Оценка: {avg:0.0}" : "Нет оценок", FontSize = 12, Margin = new Thickness(0, 4, 0, 0) });
 
-            var open = new Button { Content = "Открыть", Margin = new Thickness(0, 8, 0, 0) };
-            open.Click += (_, __) => NavigationService?.Navigate(new BookDetailPage(b.BookId));
-            sp.Children.Add(open);
-
-            var moveRow = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
+            var moveRow = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
             var cb = new ComboBox();
             foreach (var opt in new[]
             {
@@ -169,8 +168,26 @@ namespace libraryapp.Pages
             moveRow.Children.Add(cb);
             sp.Children.Add(moveRow);
 
+            root.MouseLeftButtonUp += (_, ev) =>
+            {
+                if (IsInteractiveNavigationSource(ev.OriginalSource as DependencyObject))
+                    return;
+                NavigationService?.Navigate(new BookDetailPage(b.BookId));
+            };
+
             root.Child = sp;
             return root;
+        }
+
+        private static bool IsInteractiveNavigationSource(DependencyObject src)
+        {
+            while (src != null)
+            {
+                if (src is System.Windows.Controls.Primitives.ButtonBase || src is ComboBox || src is ComboBoxItem || src is TextBox)
+                    return true;
+                src = VisualTreeHelper.GetParent(src);
+            }
+            return false;
         }
     }
 }

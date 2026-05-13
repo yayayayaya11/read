@@ -107,7 +107,35 @@ namespace libraryapp.Pages
         private static string FormatComplaint(Complaints c)
         {
             var kind = c.TargetKind == ComplaintKinds.Book ? "Книга" : c.TargetKind == ComplaintKinds.Author ? "Автор" : "Отзыв";
-            return $"#{c.ComplaintId} [{kind}] от пользователя #{c.ComplainantUserId}\r\n{c.Description}";
+            var target = "";
+            if (c.TargetKind == ComplaintKinds.Book && c.BookId.HasValue)
+            {
+                var b = Core.Context.Books.Include(x => x.AppUsers).FirstOrDefault(x => x.BookId == c.BookId.Value);
+                if (b != null)
+                    target = $"Жалоба на книгу: «{b.Title}» (автор: {b.AppUsers?.DisplayName ?? b.AppUsers?.Login ?? "—"})";
+                else
+                    target = $"Жалоба на книгу (id #{c.BookId.Value}, запись не найдена)";
+            }
+            else if (c.TargetKind == ComplaintKinds.Author && c.AuthorUserId.HasValue)
+            {
+                var a = Core.Context.AppUsers.FirstOrDefault(x => x.UserId == c.AuthorUserId.Value);
+                if (a != null)
+                    target = $"Жалоба на автора: {a.DisplayName} ({a.Login})";
+                else
+                    target = $"Жалоба на автора (id пользователя #{c.AuthorUserId.Value}, запись не найдена)";
+            }
+            else if (c.TargetKind == ComplaintKinds.Review && c.ReviewId.HasValue)
+            {
+                var r = Core.Context.Reviews.Include(x => x.Books).Include(x => x.AppUsers).FirstOrDefault(x => x.ReviewId == c.ReviewId.Value);
+                if (r != null)
+                    target = $"Жалоба на отзыв к книге «{r.Books?.Title ?? "—"}» (автор отзыва: {r.AppUsers?.DisplayName ?? r.AppUsers?.Login ?? "—"})";
+                else
+                    target = $"Жалоба на отзыв (id #{c.ReviewId.Value}, запись не найдена)";
+            }
+
+            return (string.IsNullOrEmpty(target) ? "" : target + "\r\n") +
+                   $"#{c.ComplaintId} [{kind}] от пользователя #{c.ComplainantUserId}\r\n" +
+                   c.Description;
         }
 
         private UIElement BuildDisputes()
@@ -270,15 +298,37 @@ namespace libraryapp.Pages
                 cb.SelectedIndex = Math.Max(0, u.RoleId - 1);
                 var setRole = new Button { Content = "Назначить роль", Margin = new Thickness(8, 0, 0, 0) };
                 var uid = u.UserId;
-                setRole.Click += (_, __) =>
+                var isSelf = AppSession.CurrentUser != null && uid == AppSession.CurrentUser.UserId;
+                if (isSelf)
                 {
-                    var newRole = (int)((cb.SelectedItem as ComboBoxItem)?.Tag ?? RoleIds.Reader);
-                    var user = Core.Context.AppUsers.First(x => x.UserId == uid);
-                    user.RoleId = newRole;
-                    Core.Context.SaveChanges();
-                    MessageBox.Show("Роль обновлена.");
-                    Rebuild();
-                };
+                    cb.IsEnabled = false;
+                    setRole.IsEnabled = false;
+                    setRole.ToolTip = "Нельзя изменить свою собственную роль.";
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = "Смена собственной роли недоступна.",
+                        Foreground = System.Windows.Media.Brushes.DimGray,
+                        FontSize = 12,
+                        Margin = new Thickness(0, 0, 0, 4)
+                    });
+                }
+                else
+                {
+                    setRole.Click += (_, __) =>
+                    {
+                        if (AppSession.CurrentUser != null && uid == AppSession.CurrentUser.UserId)
+                        {
+                            MessageBox.Show("Нельзя изменить свою собственную роль.");
+                            return;
+                        }
+                        var newRole = (int)((cb.SelectedItem as ComboBoxItem)?.Tag ?? RoleIds.Reader);
+                        var user = Core.Context.AppUsers.First(x => x.UserId == uid);
+                        user.RoleId = newRole;
+                        Core.Context.SaveChanges();
+                        MessageBox.Show("Роль обновлена.");
+                        Rebuild();
+                    };
+                }
                 roleRow.Children.Add(cb);
                 roleRow.Children.Add(setRole);
                 sp.Children.Add(roleRow);

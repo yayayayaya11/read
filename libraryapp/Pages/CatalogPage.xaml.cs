@@ -102,11 +102,6 @@ namespace libraryapp.Pages
                 Cursor = Cursors.Hand,
                 Tag = b.BookId
             };
-            root.MouseLeftButtonUp += (s, ev) =>
-            {
-                if (s is Border bd && bd.Tag is int id)
-                    NavigationService?.Navigate(new BookDetailPage(id));
-            };
 
             var sp = new StackPanel { Margin = new Thickness(6) };
             var bi = ImageHelper.ToBitmapImage(b.CoverImage);
@@ -193,8 +188,27 @@ namespace libraryapp.Pages
             shelfPanel.Children.Add(shelfDock);
             sp.Children.Add(shelfPanel);
 
+            root.MouseLeftButtonUp += (_, ev) =>
+            {
+                if (IsInteractiveNavigationSource(ev.OriginalSource as DependencyObject))
+                    return;
+                NavigationService?.Navigate(new BookDetailPage(b.BookId));
+            };
+
             root.Child = sp;
             return root;
+        }
+
+        /// <summary>Клики по кнопке «+», списку полки и т.п. не открывают карточку.</summary>
+        private static bool IsInteractiveNavigationSource(DependencyObject src)
+        {
+            while (src != null)
+            {
+                if (src is System.Windows.Controls.Primitives.ButtonBase || src is ComboBox || src is ComboBoxItem || src is TextBox)
+                    return true;
+                src = VisualTreeHelper.GetParent(src);
+            }
+            return false;
         }
     }
 }
