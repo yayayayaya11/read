@@ -21,7 +21,22 @@ namespace libraryapp.Pages
             var u = Core.Context.AppUsers.Include(x => x.Roles).First(x => x.UserId == AppSession.CurrentUser.UserId);
 
             Root.Children.Add(new TextBlock { Text = "Профиль", FontSize = 22, FontWeight = FontWeights.Bold });
-            Root.Children.Add(new TextBlock { Text = "Имя: " + u.DisplayName, Margin = new Thickness(0, 12, 0, 0) });
+
+            var nameRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
+            nameRow.Children.Add(new TextBlock { Text = "Имя: " + u.DisplayName, VerticalAlignment = VerticalAlignment.Center });
+            var editBtn = new Button { Content = "Редактировать", Margin = new Thickness(8, 0, 0, 0), HorizontalAlignment = HorizontalAlignment.Left };
+            editBtn.Click += (_, __) =>
+            {
+                var newName = UiPrompts.AskMultiline("Новое имя", "Введите новое отображаемое имя");
+                if (string.IsNullOrWhiteSpace(newName)) return;
+                u.DisplayName = newName.Trim();
+                Core.Context.SaveChanges();
+                MessageBox.Show("Имя обновлено.");
+                Reload();
+            };
+            nameRow.Children.Add(editBtn);
+            Root.Children.Add(nameRow);
+
             Root.Children.Add(new TextBlock { Text = "Логин: " + u.Login, Margin = new Thickness(0, 4, 0, 0) });
             Root.Children.Add(new TextBlock { Text = "Электронная почта: " + u.Email, Margin = new Thickness(0, 4, 0, 0) });
             Root.Children.Add(new TextBlock { Text = "Роль: " + (u.Roles?.Name ?? ""), Margin = new Thickness(0, 4, 0, 0) });
